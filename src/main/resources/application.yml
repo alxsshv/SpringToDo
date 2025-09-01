@@ -1,0 +1,92 @@
+---
+spring:
+  config:
+    activate:
+      on-profile: "default"
+  redis:
+    host: localhost
+    port: 6379
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tododb
+    driver-class-name: org.postgresql.Driver
+    username: alexei
+    password: test
+  jpa:
+    hibernate:
+      ddl-auto: none
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include:
+        - health
+        - info
+        - metrics
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  security:
+    administrator:
+      enabled: true
+      username: admin
+      email: admin@email.com
+      password: admin
+  jwt:
+    secret: "63a373badc6ea98649527c3131de1e41cb90fc5638c5ba6145398424f1b57588"
+    tokenExpiration: 15m
+    refreshTokenExpiration: 30m
+  scheduler:
+    enable: true
+    expirationTokenDeleteInterval: PT10M
+
+---
+spring:
+  config:
+    activate:
+      on-profile: "test"
+  redis:
+    host: localhost
+    port: 6379
+  datasource:
+    url: jdbc:postgresql://localhost:5432/tododb
+    driver-class-name: org.postgresql.Driver
+    username: alexei
+    password: test
+  jpa:
+    hibernate:
+      ddl-auto: none
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.xml
+
+management:
+  endpoints:
+    enabled-by-default: true
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - metrics
+  endpoint:
+    health:
+      show-details: always
+
+app:
+  security:
+    administrator:
+      enabled: false
+  jwt:
+    secret: "63a373badc6ea98649527c3131de1e41cb90fc5638c5ba6145398424f1b57588"
+    tokenExpiration: 3m
+    refreshTokenExpiration: 30m
+  scheduler:
+    enable: true
+    expirationTokenDeleteInterval: PT2M
+
+

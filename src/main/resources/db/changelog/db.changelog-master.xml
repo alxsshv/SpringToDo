@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd">
+
+
+    <include file="v.1.0.0/06-07-2025-create-table-service-users.xml" relativeToChangelogFile="true"/>
+    <include file="v.1.0.0/22-07-2025-create-table-boards.xml" relativeToChangelogFile="true"/>
+    <include file="v.1.0.0/22-07-2025-create-table-tasks.xml" relativeToChangelogFile="true"/>
+    <include file="v.1.0.0/22-07-2025-create-boards-index-user-id.xml" relativeToChangelogFile="true"/>
+    <include file="v.1.0.0/22-07-2025-create-table-refresh-tokens.xml" relativeToChangelogFile="true"/>
+    <include file="v.1.0.0/22-07-2025-create-foreign-key-user-id-for-table-refresh-tokens.xml" relativeToChangelogFile="true"/>
+    <include file="v.1.0.0/24-07-2025-create-table-security-roles.xml" relativeToChangelogFile="true"/>
+    <include file="v.1.0.0/24-07-2025-create-security-roles-index-user-id.xml" relativeToChangelogFile="true"/>
+    <include file="v.1.0.0/24-07-2025-create-foreign-key-user-id-for-table-security-roles.xml" relativeToChangelogFile="true"/>
+
+
+
+
+
+</databaseChangeLog>
