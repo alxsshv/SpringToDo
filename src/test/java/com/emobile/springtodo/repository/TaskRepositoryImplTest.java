@@ -20,7 +20,6 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.Optional;

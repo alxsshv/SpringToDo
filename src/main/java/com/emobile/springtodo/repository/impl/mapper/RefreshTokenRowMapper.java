@@ -1,7 +1,6 @@
 package com.emobile.springtodo.repository.impl.mapper;
 
 import com.emobile.springtodo.entity.RefreshToken;
-import lombok.NoArgsConstructor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
 
