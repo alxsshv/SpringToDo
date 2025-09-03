@@ -1,7 +1,6 @@
 package com.emobile.springtodo.repository.impl;
 
 import com.emobile.springtodo.entity.Task;
-import com.emobile.springtodo.repository.RefreshTokenRepository;
 import com.emobile.springtodo.repository.TaskRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
