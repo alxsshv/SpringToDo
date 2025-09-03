@@ -15,6 +15,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.Set;
 
+/** Конфигурация для создания администратора приложения по умолчанию. */
 @Configuration
 @ConfigurationProperties(prefix = "app.security.administrator")
 @RequiredArgsConstructor
@@ -23,16 +24,29 @@ import java.util.Set;
 @Slf4j
 public class InitialConfiguration {
 
+    /** Репозиторий для хранения пользователей */
     @Autowired
     private final UserRepository userRepository;
+
+    /** Кодировщик паролей пользователей */
     @Autowired
     private final PasswordEncoder passwordEncoder;
 
+    /** Имя пользователя (логин) администратора*/
     private String username;
+
+    /** Адрес электронной почты администратора */
     private String email;
+
+    /** Пароль администратора */
     private String password;
+
+    /** Флаг, определяющий требуется ли создавать администратора системы. */
     private boolean enabled;
 
+    /** Метод создания администратора системы по умолчанию Данные администратора
+     * должны быть представлены в файле application.yml.
+     * Выполняется один раз после запуска приложения */
     @PostConstruct
     public void initializeDefaultAdministrator() {
         if (username == null || email == null || password == null) {

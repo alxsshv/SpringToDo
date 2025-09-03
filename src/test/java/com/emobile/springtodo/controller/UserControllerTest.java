@@ -56,7 +56,6 @@ public class UserControllerTest {
 
     private MockMvc mockMvc;
 
-    @Container
     private static final PostgreSQLContainer<?> POSTGRES
             = new PostgreSQLContainer<>("postgres:17.5");
 

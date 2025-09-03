@@ -2,6 +2,7 @@ package com.emobile.springtodo.dto.request.sort;
 
 import lombok.Getter;
 
+/** Перечисление, определяющие поля, пригодные для сортировки задач */
 @Getter
 public enum TaskRequestSorts {
     ID ("id"),

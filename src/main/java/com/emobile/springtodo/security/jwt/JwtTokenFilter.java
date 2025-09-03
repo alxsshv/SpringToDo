@@ -18,14 +18,22 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+
+/** Класс, описывающий фильтр для выполнения авторизации с использованием JWT-токена */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class JwtTokenFilter extends OncePerRequestFilter {
 
+    /** Утилитарный класс, содержащий методы работы с access-токенами. */
     private final JwtUtils jwtUtils;
+    /** Сервис для получения прав доступа пользователя */
     private final UserDetailsService userDetailsService;
 
+    /** Метод проверки access-токена и авторизации пользователя.
+     * @param request - запрос, требующий авторизации.
+     * @param response - ответ сервера на запрос.
+     * @param filterChain  - цепочка фильтров в которой применяется JwtTokenFilter*/
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -46,6 +54,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    /** Метод извлечения access-токена из заголовка запроса.
+     * @param request - запрос, содержащий заголовок авторизации.
+     * @return возвращает строковое представление токена или null, если токен отсутствует.*/
     private String getToken(HttpServletRequest request) {
         final String headerAuth = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String jwtTokenPrefix = "Bearer ";

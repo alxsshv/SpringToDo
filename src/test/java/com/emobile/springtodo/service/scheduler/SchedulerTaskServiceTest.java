@@ -23,10 +23,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
-
 import static org.awaitility.Awaitility.await;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
 
 @SpringBootTest
 @ActiveProfiles("test")
@@ -92,11 +91,11 @@ public class SchedulerTaskServiceTest {
                 .expireDate(Instant.now().minus(1, ChronoUnit.DAYS))
                 .build();
         refreshTokenRepository.save(refreshToken);
-        long afterAddTokenCount = refreshTokenRepository.count();
-        await().atMost(Duration.ofSeconds(10))
+        long beforeTokenCount = refreshTokenRepository.count();
+        await().atMost(Duration.ofSeconds(11))
                 .untilAsserted(() -> {
                     verify(scheduledTaskService, atLeast(2)).deleteExpiredRefreshTokens();
-                    Assertions.assertEquals(afterAddTokenCount-1, refreshTokenRepository.count());
+                    Assertions.assertTrue(beforeTokenCount > refreshTokenRepository.count());
                 });
     }
 

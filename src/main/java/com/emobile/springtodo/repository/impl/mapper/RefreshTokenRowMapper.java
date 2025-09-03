@@ -8,12 +8,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
+ *  Класс, реализующий метод для сопоставления каждой строки результирующего набора {@link ResultSet} с
+ *  соответствующим объектом класса {@link RefreshToken}
  * @author Aleksey Shvariov
  */
 
 @Component
 public class RefreshTokenRowMapper implements RowMapper<RefreshToken> {
 
+    /** Метод для сопоставления каждой строки результирующего набора {@link ResultSet} с
+     *  соответствующим объектом класса {@link RefreshToken} */
     @Override
     public RefreshToken mapRow(ResultSet rs, int rowNum) throws SQLException {
         return RefreshToken.builder()

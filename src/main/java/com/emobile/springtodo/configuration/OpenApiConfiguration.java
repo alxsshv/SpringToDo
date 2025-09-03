@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.info.Info;
 import io.swagger.v3.oas.annotations.security.SecurityScheme;
 
 /**
+ * Конфигурация OpenApi.
  * @author Aleksey Shvariov
  */
 

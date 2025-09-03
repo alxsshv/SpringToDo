@@ -5,9 +5,12 @@ import io.micrometer.core.instrument.binder.MeterBinder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+
+/** Конфигурация для создания кастомных метрик для проверки состояния приложения. */
 @Configuration
 public class MetricsConfiguration {
 
+    /** Счётчик выполненных задач . */
     @Bean
     MeterBinder meterBinder() {
         return meterRegistry -> {

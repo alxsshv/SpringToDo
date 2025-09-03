@@ -15,13 +15,17 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/** Класс описывающий возникающую ошибку аутентификации с использованием JWT-токена */
 @Component
 @RequiredArgsConstructor
 @Slf4j
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
+    /** Маппер для преобразования объекта в json */
     private final ObjectMapper objectMapper;
 
+    /** Метод подготовки ответа на запрос авторизации в случае,
+     *  если попытка авторизации не удачна. */
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,

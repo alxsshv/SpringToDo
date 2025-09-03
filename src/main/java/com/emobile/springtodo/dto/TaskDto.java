@@ -15,7 +15,6 @@ import java.time.LocalDateTime;
  * Объект передачи данных для сущности {@link com.emobile.springtodo.entity.Task}
  * @author Aleksey Shvariov
  */
-
 @Tag(name = "Сведения о задаче", description = "Объект передачи данных для задачи")
 @Getter
 @Setter

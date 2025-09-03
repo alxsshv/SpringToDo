@@ -2,6 +2,7 @@ package com.emobile.springtodo.dto.request.sort;
 
 import lombok.Getter;
 
+/** Перечисление, определяющие поля, пригодные для сортировки пользователей */
 @Getter
 public enum UserRequestSorts {
     ID ("id"),

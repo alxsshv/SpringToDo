@@ -25,15 +25,28 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Реализация интерфейса {@link UserRepository}.
+ * @author Aleksey Shvariov*
+ */
 @Repository
 @Slf4j
 public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> implements UserRepository {
 
+    /** Конструктор с параметрами
+     * @param jdbcTemplate - объект для взаимодействия с базой данных.
+     * @param rowMapper - параметризованный интерфейс для сопоставления каждой строки {@link ResultSet}
+     *                 с соответствующим объектом.
+     */
     public UserRepositoryImpl(@Autowired JdbcTemplate jdbcTemplate,
                               @Autowired RowMapper<ServiceUser> rowMapper) {
         super(jdbcTemplate, rowMapper);
     }
 
+    /** Метод получения всех записей о пользователях, имеющихся в таблице.
+     * @return возвращает коллекцию (список) объектов {@link ServiceUser}, хранящихся в БД,
+     * если записей нет - возвращается пустой список.
+     * */
     @Override
     public List<ServiceUser> findAll() {
         final String sqlQuery = "SELECT su.id, su.username, su.email, su.password, sr.security_role FROM "
@@ -41,7 +54,11 @@ public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> 
         return jdbcTemplate.query(sqlQuery, new ServiceUserResultSetExtractor());
     }
 
-
+    /** Метод постраничного получения всех записей о пользователях, имеющихся в таблице.
+     * @param pageable  - параметры пагинации в виде объекта {@link Pageable}.
+     * @return возвращает страницу {@link Page} объектов {@link ServiceUser}, хранящихся в БД,
+     * если записей нет - возвращается пустая страница.
+     * */
     @Override
     public Page<ServiceUser> findAll(Pageable pageable) {
         final long total = count();
@@ -57,6 +74,11 @@ public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> 
         return new PageImpl<>(content, pageable, total);
     }
 
+    /** Метод получения записи о пользователе по уникальному идентификатору.
+     * @param id - уникальный идентификатор записи о пользователе в базе данных.
+     * @return возвращает {@link Optional} с экземпляром сущности {@link ServiceUser},
+     * уникальный идентификатор которого соответствует параметру метода id или пустой Optional, если объект не найден.
+     */
     @Override
     public Optional<ServiceUser> findById(Long id) {
         ServiceUser user;
@@ -75,6 +97,13 @@ public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> 
         return Optional.ofNullable(user);
     }
 
+
+    /** Метод сохранения и обновления информации о пользователях в БД. Если переданный в качестве параметра
+     *  объект не имеет идентификатора (id = null), создается новая запись в БД.
+     *  Если переданный в качестве параметра объект имеет уникальный идентификатор,
+     *  то должна обновляться уже существующая запись в БД.
+     * @param user  - сохраняемый экземпляр класса {@link ServiceUser}
+     * @return возвращает сохранённую (обновлённую) запись в БД в виде объекта {@link ServiceUser} */
     @Override
     public ServiceUser save(ServiceUser user) {
         LinkedHashMap<String, Object> userFields = buildUserFields(user);
@@ -87,7 +116,7 @@ public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> 
             assert Arrays.stream(saveResults).allMatch(value -> value > 0);
             return user;
         } else {
-            int updateResult = updateUserTable(user, userFields);
+            int updateResult = updateUserTable(userFields);
             assert updateResult > 0;
             int[] updateResults = updateRoleTable(user);
             assert Arrays.stream(updateResults).allMatch(value -> value > 0);
@@ -97,6 +126,10 @@ public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> 
 
     }
 
+    /** Метод формирования коллекции полей и значений сущности {@link ServiceUser} для использования в запросах к БД.
+     * @param user - объект класcа {@link ServiceUser}
+     * @return возвращает коллекцию ключ-значение в качестве ключей используются заголовки столбцов таблицы,
+     * в которой хранятся пользователи, а в качестве значений - значения свойств переданного объекта {@link ServiceUser}*/
     private LinkedHashMap<String, Object> buildUserFields(ServiceUser user) {
         LinkedHashMap<String, Object> userFields = new LinkedHashMap<>();
         if (user.getId() != null) {
@@ -108,13 +141,24 @@ public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> 
         return userFields;
     }
 
+    /** Метод отправляет в базу данных запрос на добавление записи о пользователе со значениями свойств,
+     *  соответствующими значениям в параметре userFields.
+     * @param userFields - коллекция ключ-значение в качестве ключей используются заголовки столбцов таблицы,
+     *      * в которой хранятся пользователи, а в качестве значений - значения свойств объекта {@link ServiceUser}
+     * @return количество добавленных записей в таблицу БД.
+     */
     private int saveUserTable(LinkedHashMap<String, Object> userFields) {
-        String insertUserQuery = "INSERT INTO " + getTableName()
+        final String insertUserQuery = "INSERT INTO " + getTableName()
                 + " (" + SqlQueryUtils.buildInsertQueryParameters(userFields)
                 + ") values (" + SqlQueryUtils.addQuestionMarks(userFields.size()) + ")";
         return jdbcTemplate.update(insertUserQuery, userFields.values().toArray());
     }
 
+    /** Метод отправляет в базу данных запрос на добавление записей о ролях пользователя со значениями свойств,
+     *  соответствующими значениям свойства roles переданного в качестве параметров объекта {@link ServiceUser}.
+     * @param user - объект класса {@link ServiceUser}, роли которого необходимо сохранить в БД.
+     * @return количество добавленных записей о ролях пользователя в таблицу БД.
+     */
     private int[] saveRoleTable(ServiceUser user) {
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
             return new int[0];
@@ -127,20 +171,39 @@ public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> 
         return jdbcTemplate.batchUpdate(insertRoleQuery, new RoleBatchSetter(roles));
     }
 
-    private int updateUserTable(ServiceUser user, LinkedHashMap<String, Object> userFields) {
+    /** Метод отправляет в базу данных запрос на обновление записи о пользователе со значениями свойств,
+     *  соответствующими значениям в параметре userFields.
+     * @param userFields - коллекция ключ-значение в качестве ключей используются заголовки столбцов таблицы,
+     *      * в которой хранятся пользователи, а в качестве значений - значения свойств объекта {@link ServiceUser}
+     * @return количество обновлённых записей в таблицу БД.
+     */
+    private int updateUserTable(LinkedHashMap<String, Object> userFields) {
         String updateQuery = "UPDATE " + getTableName()
                 + " SET " + SqlQueryUtils.buildUpdateQueryParameters(userFields) + " WHERE id = ?";
         List<Object> values = new ArrayList<>(userFields.values());
-        values.add(user.getId());
+        values.add(userFields.get("id"));
         return jdbcTemplate.update(updateQuery, values.toArray());
     }
 
+    /** Метод отправляет в базу данных запрос на удаление имеющихся записей о ролях пользователя и
+     *  добавление новых ролей пользователя со значениями свойств,
+     *  соответствующими значениям свойства roles переданного в качестве параметров объекта {@link ServiceUser}.
+     * @param user - объект класса {@link ServiceUser}, роли которого необходимо изменить в БД.
+     * @return количество добавленных записей о ролях пользователя в таблицу БД.
+     */
     private int[] updateRoleTable(ServiceUser user) {
         String deleteUserRoles = "DELETE FROM " + ServiceUser.getRoleTableName() + " WHERE user_id = " + user.getId();
         jdbcTemplate.execute(deleteUserRoles);
         return saveRoleTable(user);
     }
 
+    /** Метод получения записи о пользователе из БД по имени пользователя или адресу электронной почты.
+     * Запись должна возвращаться при получении совпадения по любому из параметров
+     * (или имени пользователя, или адреса электронной почты)
+     * @param username - имя пользователя, по которому необходимо найти запись о пользователе.
+     * @param email - адрес электронной почты пользователя, по которому необходимо найти запись о пользователе.
+     * @return возвращает {@link Optional} с объектом класса {@link ServiceUser}
+     * при наличии записи в БД или возвращает пустой Optional.*/
     @Override
     public Optional<ServiceUser> findByUsernameOrEmail(String username, String email) {
         ServiceUser user;
@@ -160,6 +223,10 @@ public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> 
         return Optional.ofNullable(user);
     }
 
+    /** Метод проверки имеется ли в таблице запись с указанным адресом электронной почты.
+     * @param email  - проверяемый адрес электронной почты.
+     * @return возвращает true, если запись с указанным адресом электронной почты имеется в БД
+     * или false - если запись с указанным адресом электронной почты не найдена.*/
     @Override
     public boolean existByEmail(String email) {
         final String getCountSqlQuery = "SELECT EXISTS (SELECT * FROM " + getTableName() + " WHERE email = ?)";
@@ -171,6 +238,10 @@ public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> 
 
     }
 
+    /** Метод проверки имеется ли в таблице запись с указанным именем пользователя.
+     * @param username  - проверяемое имя пользователя.
+     * @return возвращает true, если запись с указанным именем пользователя имеется в БД
+     * или false - если запись с указанным именем пользователя не найдена.*/
     @Override
     public boolean existByUsername(String username) {
         final String getCountSqlQuery = "SELECT EXISTS (SELECT * FROM " + getTableName() + " WHERE username = ?)";
@@ -181,12 +252,15 @@ public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> 
         }
     }
 
-
+    /**Внутренний класс, описывающий запись о роли пользователя в базе данных.*/
     private record RoleEntity(String role, Long userId) {
     }
 
+    /** Реализация интерфейса {@link BatchPreparedStatementSetter}
+     * для пакетной записи ролей пользователя в базу данных. */
     private record RoleBatchSetter(List<RoleEntity> roles) implements BatchPreparedStatementSetter {
 
+        /**Метод установки значений параметров для формирования запроса к БД. */
         @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 RoleEntity roleEntity = roles.get(i);
@@ -194,18 +268,27 @@ public class UserRepositoryImpl extends EntityRepositoryImpl<ServiceUser, Long> 
                 ps.setLong(2, roleEntity.userId);
             }
 
+        /** Метод получения размера записываемого в БД пакета данных (количество записей)*/
             @Override
             public int getBatchSize() {
                 return roles.size();
             }
     }
 
+    /** Класс, реализующий интерфейс обратного вызова, используемый методами {@link JdbcTemplate}
+     * для получения объектов {@link ServiceUser} из БД вместе с ролями пользователя.*/
     private static class ServiceUserResultSetExtractor implements ResultSetExtractor<List<ServiceUser>> {
+
+
+        /** Метод позволяет преобразовывать данные, полученные из таблиц БД, в которых хранятся пользователи и их роли
+         *  в коллекцию объектов {@link ServiceUser}.
+         *  @param resultSet - набор, содержащий результаты запроса на получение записей о пользователях из БД.
+         *  @return возвращает коллекцию (список) объектов {@link ServiceUser}*/
         @Override
         public List<ServiceUser> extractData(ResultSet resultSet) throws SQLException, DataAccessException {
             Map<Long, ServiceUser> usersMap = new LinkedHashMap<>();
             while (resultSet.next()) {
-                Long userId = resultSet.getLong("id");
+                final Long userId = resultSet.getLong("id");
                 ServiceUser user = usersMap.get(userId);
                 String role = resultSet.getString("security_role");
                 if (user == null) {

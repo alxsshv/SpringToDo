@@ -57,10 +57,8 @@ public class BoardControllerTest {
     @Autowired
     private UserRepository userRepository;
 
-    @Container
     private static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17.5");
 
-    @Container
     private static final RedisContainer REDIS
             = new RedisContainer(DockerImageName.parse("redis:8.0.3")).withExposedPorts(6379);
 

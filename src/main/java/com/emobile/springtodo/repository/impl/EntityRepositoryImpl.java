@@ -4,9 +4,10 @@ import com.emobile.springtodo.configuration.AppDefaults;
 import com.emobile.springtodo.entity.Identifiable;
 import com.emobile.springtodo.exception.EntityIllegalStateException;
 import com.emobile.springtodo.exception.EntityNotFoundException;
+import com.emobile.springtodo.exception.RepositoryOperationException;
+import com.emobile.springtodo.repository.EntityRepository;
 import com.emobile.springtodo.repository.annotation.TableName;
 import com.emobile.springtodo.repository.utils.SqlQueryUtils;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
@@ -27,7 +28,7 @@ import java.util.*;
  */
 
 @Slf4j
-public abstract class EntityRepositoryImpl<T extends Identifiable<ID>, ID>{
+public abstract class EntityRepositoryImpl<T extends Identifiable<ID>, ID> implements EntityRepository<T, ID> {
 
     /** Тип сущности с котрой работает репозиторий. */
     private final Type entityType;
@@ -62,20 +63,14 @@ public abstract class EntityRepositoryImpl<T extends Identifiable<ID>, ID>{
      * @throws IllegalStateException будет выброшено, если класс-наследник не передал в конструкцию интерфейс RowMapper,
      * параметризованный типом сущности.
      */
-    @SneakyThrows
     protected String getTableName() {
         if (tableName == null) {
-            try {
-                final String tableNameAnnotationValue = getTableNameAnnotationValue();
-                if (tableNameAnnotationValue.isEmpty()) {
-                    throw new EntityIllegalStateException("Класс, описывающий сущность, содержит аннотацию @TableName," +
-                            " но имя таблицы (параметр value) не указано");
-                }
-                tableName = tableNameAnnotationValue;
-            } catch (NoSuchFieldException ex) {
-                throw new IllegalStateException("Ошибка определения класса, описывающего сущность," +
-                        " не найдено параметризованное свойство rowMapper");
+            final String tableNameAnnotationValue = getTableNameAnnotationValue();
+            if (tableNameAnnotationValue.isEmpty()) {
+                throw new EntityIllegalStateException("Класс, описывающий сущность, содержит аннотацию @TableName," +
+                        " но имя таблицы (параметр value) не указано");
             }
+            tableName = tableNameAnnotationValue;
         }
         return tableName;
     }
@@ -85,17 +80,26 @@ public abstract class EntityRepositoryImpl<T extends Identifiable<ID>, ID>{
      * @return возвращает строку, содержащую имя таблицы, из значения value аннотации {@link TableName}.
      * @throws EntityIllegalStateException будет выброшено, если класс,
      * описывающий сущность не помечена аннотацией {@link TableName}.
+     * @throws RepositoryOperationException будет выброшено в случае возникновения прочих
+     * ошибок при получении имени таблицы из значения аннотации.
      */
-    private String getTableNameAnnotationValue() throws NoSuchFieldException, ClassNotFoundException {
-        final Class<?> entityClass = Class.forName(entityType.getTypeName());
-        if (!entityClass.isAnnotationPresent(TableName.class)) {
-            throw new EntityIllegalStateException("Класс, описывающий сущность, не содержит обязательной аннотации @TableName");
+    private String getTableNameAnnotationValue() {
+        try {
+            final Class<?> entityClass = Class.forName(entityType.getTypeName());
+            if (!entityClass.isAnnotationPresent(TableName.class)) {
+                throw new EntityIllegalStateException("Класс, описывающий сущность, не содержит обязательной аннотации @TableName");
+            }
+            return entityClass.getAnnotation(TableName.class).value();
+        } catch (ClassNotFoundException  ex) {
+            String errorMessage = "Ошибка при чтении имени таблицы из аннотации @TableName: " + ex.getMessage();
+            log.error(errorMessage);
+            throw new RepositoryOperationException(errorMessage);
         }
-        return entityClass.getAnnotation(TableName.class).value();
     }
 
     /** Метод получения всех записей о сущности, содержащихся в указанной таблице.
      * @return возвращает список экземпляров сущности, котрой параметризован репозиторий. */
+    @Override
     public List<T> findAll() {
         final String sqlQuery = "SELECT * FROM " + getTableName();
         return jdbcTemplate.query(sqlQuery, rowMapper);
@@ -104,6 +108,7 @@ public abstract class EntityRepositoryImpl<T extends Identifiable<ID>, ID>{
     /** Метод постраничного получения всех записей о сущности, содержащихся в указанной таблице.
      * @param pageable - параметры пагинации в виде {@link Pageable}.
      * @return возвращает страницу экземпляров сущности, котрой параметризован репозиторий. */
+    @Override
     public Page<T> findAll(Pageable pageable) {
         final long total = count();
         final Sort sort = pageable.getSortOr(AppDefaults.SORT);
@@ -131,13 +136,14 @@ public abstract class EntityRepositoryImpl<T extends Identifiable<ID>, ID>{
         return Optional.ofNullable(entity);
     }
 
+
     /** Метод сохранения записи о переданном объекте в БД
      * или обновляет его значения, если он ранее был сохранен в БД и ему присвоен уникальный идентификатор.
-     * @param entity - сохраняемый объект,
-     * @param entityFields - карта (мапа) полей объекта с ключом, соответствующим имени столбца таблицы БД
-     * @return сохранённый в базе данных объект с уникальным идентификатором */
-    public T save(T entity, LinkedHashMap<String, Object> entityFields) {
-        if (entity.getId() == null) {
+     * @param entityFields - карта (мапа) полей объекта с ключом, соответствующим заголовку столбца таблицы БД
+     * @return возвращает сохранённый в базе данных объект с уникальным идентификатором */
+    @Override
+    public T save(LinkedHashMap<String, Object> entityFields) {
+        if (!entityFields.containsKey("id") || entityFields.get("id") == null) {
             String insertQuery = "INSERT INTO " + getTableName() + " (" + SqlQueryUtils.buildInsertQueryParameters(entityFields)
                     + ") values (" + SqlQueryUtils.addQuestionMarks(entityFields.size()) + ")";
             int updateResult = jdbcTemplate.update(insertQuery, entityFields.values().toArray());
@@ -146,20 +152,30 @@ public abstract class EntityRepositoryImpl<T extends Identifiable<ID>, ID>{
         } else {
             String updateQuery = "UPDATE " + getTableName() + " SET " + SqlQueryUtils.buildUpdateQueryParameters(entityFields) + " WHERE id = ?";
             List<Object> values = new LinkedList<>(entityFields.values());
-            values.add(entity.getId());
+            values.add(entityFields.get("id"));
             int updateResult = jdbcTemplate.update(updateQuery, values.toArray());
             assert updateResult > 0;
-            return findById(entity.getId())
-                    .orElseThrow(() -> new EntityNotFoundException("Сущность с указанным id " + entity.getId() + " не найдена"));
+            return findById((ID) entityFields.get("id"))
+                    .orElseThrow(() -> new EntityNotFoundException("Сущность с указанным id " + entityFields.get("id") + " не найдена"));
         }
-
     }
 
+    /** Поиск объектов, соответствующих определённым параметрам.
+     * @param entityFields - карта (мапа) полей объекта с ключом, соответствующим заголовку столбца таблицы БД.
+     * @return список объектов, записи о которых в БД соответствуют каждому из указанных параметров.
+     * */
+    @Override
     public List<T> findByParameters(LinkedHashMap<String, Object> entityFields) {
         String findQuery = "SELECT * FROM " + getTableName() + " WHERE " + SqlQueryUtils.buildFindQueryParameters(entityFields);
         return jdbcTemplate.query(findQuery, rowMapper, entityFields.values().stream().filter(Objects::nonNull).toArray());
     }
 
+    /** Постраничный поиск объектов, соответствующих определённым параметрам.
+     * @param entityFields - карта (мапа) полей объекта с ключом, соответствующим заголовку столбца таблицы БД.
+     * @param pageable - параметры пагинации в виде {@link Pageable}.
+     * @return страницу с объектами, записи о которых в БД соответствуют каждому из указанных параметров.
+     */
+    @Override
     public Page<T> findByParameters(LinkedHashMap<String, Object> entityFields, Pageable pageable) {
         final String totalSqlQuery = "SELECT count(1) FROM " + getTableName()
                 + " WHERE " + SqlQueryUtils.buildFindQueryParameters(entityFields);
@@ -174,29 +190,39 @@ public abstract class EntityRepositoryImpl<T extends Identifiable<ID>, ID>{
                 + " FETCH NEXT ? ROWS ONLY" ;
         List<Object> fieldValues = new ArrayList<>(entityFields.values().stream().filter(Objects::nonNull).toList());
         fieldValues.addAll(List.of(pageable.getOffset(), pageable.getPageSize()));
-        List<T> content = jdbcTemplate.query(getEntitiesPageQuery, rowMapper, fieldValues.toArray());
+        final List<T> content = jdbcTemplate.query(getEntitiesPageQuery, rowMapper, fieldValues.toArray());
         return new PageImpl<>(content, pageable, total);
     }
 
-
+    /** Метод удаления записи об объекте по его уникальному идентификатору
+     * @param id - уникальный идентификатор объекта.
+     * */
+    @Override
     public void deleteById(ID id) {
         final String deleteQuery = "DELETE FROM " + getTableName() + " WHERE id = ?";
         jdbcTemplate.update(deleteQuery, id);
     }
 
-
+    /** Метод удаления всех записей об объектах (очистка таблицы).*/
+    @Override
     public void deleteAll() {
         final String clearTableQuery = "DELETE FROM " + getTableName();
         jdbcTemplate.update(clearTableQuery);
     }
 
 
+    /** Счетчик количества записей в таблице.
+     * @return возвращает количество записей в таблице.
+     * @throws RepositoryOperationException будет выброшено,
+     * в случае возникновения исключений при выполнении запроса к БД с использованием {@link JdbcTemplate}
+     * */
+    @Override
     public Long count() {
         final String getCountSqlQuery = "SELECT count(1) FROM " + getTableName();
         try {
             return jdbcTemplate.queryForObject(getCountSqlQuery, Long.class);
         } catch (Exception ex) {
-            throw new RuntimeException("Ошибка выполнения sql" + ex.getMessage());
+            throw new RepositoryOperationException("Ошибка выполнения sql" + ex.getMessage());
         }
     }
 }

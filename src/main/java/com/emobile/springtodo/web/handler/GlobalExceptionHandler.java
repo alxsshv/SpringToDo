@@ -21,6 +21,17 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    /** Обработка исключения {@link RepositoryOperationException}
+     * @param ex - перехваченное исключение {@link RepositoryOperationException}
+     * @return возвращает сервисное сообщение о возникшей ошибке в виде объекта {@link ServiceMessage} */
+    @ExceptionHandler(RepositoryOperationException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ServiceMessage handeRepositoryOperationException(RepositoryOperationException ex) {
+        final String message = "Внутренняя ошибка сервиса";
+        log.error("{} : {}", message, ex.getMessage());
+        return new ServiceMessage(HttpStatus.INTERNAL_SERVER_ERROR.value(), message);
+    }
+
     /** Обработка исключения {@link EntityIllegalStateException}
      * @param ex - перехваченное исключение {@link EntityIllegalStateException}
      * @return возвращает сервисное сообщение о возникшей ошибке в виде объекта {@link ServiceMessage} */

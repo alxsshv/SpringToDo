@@ -20,25 +20,31 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+/** Конфигурация параметров безопасности */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfiguration {
 
+    /** Сервис для получения информации о привилегиях (ролях) пользователя */
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
+    /** Объект, формирующий ответ пользователю при неудачной аутентификации */
     @Autowired
     private JwtAuthenticationEntryPoint authenticationEntryPoint;
 
+    /** Фильтр для аутентификации пользователя при помощи jwt-токена */
     @Autowired
     private JwtTokenFilter jwtTokenFilter;
 
+    /** Кодировщик паролей пользователя. */
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    /** Провайдер для аутентификации пользователя при помощи данных полученных из БД */
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
         final DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
@@ -47,11 +53,13 @@ public class SecurityConfiguration {
         return authenticationProvider;
     }
 
+    /** Объект управляющий аутентификацией пользователя */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
     }
 
+    /** Цепочка фильтров (объект определяющий параметры безопасности приложения). */
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity security) throws Exception {
         security.authorizeHttpRequests((authRegistry) -> authRegistry
