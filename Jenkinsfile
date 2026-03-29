@@ -5,24 +5,27 @@ pipeline {
     tools {
         maven '3.9.12'
     }
-    when {
-        allOf {
-            expression { return env.CHANGE_TARGET == 'dev' }
-            expression { return env.CHANGE_ID != null }
-        }
-    }
     stages {
-        stage('Checkout') {
+        stage('checkout') {
+            when {
+                expression { return env.CHANGE_TARGET == 'dev' && env.CHANGE_ID != null }
+            }
             steps {
                 checkout scm
             }
         }
         stage ('build') {
+            when {
+                expression { return env.CHANGE_TARGET == 'dev' && env.CHANGE_ID != null }
+            }
             steps {
-                sh 'mvn -Dmaven.test.skip clean verify '
+                    sh 'mvn -Dmaven.test.skip clean verify '
             }
         }
         stage ('tests') {
+            when {
+                expression { return env.CHANGE_TARGET == 'dev' && env.CHANGE_ID != null }
+            }
             steps {
                 sh 'mvn test'
             }
