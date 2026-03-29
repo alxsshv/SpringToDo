@@ -5,8 +5,6 @@ import com.emobile.springtodo.entity.ServiceUser;
 import com.emobile.springtodo.security.SecurityRole;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,14 +14,12 @@ import java.util.stream.Collectors;
  */
 
 
-@SpringBootTest
-public class ServiceUserMapperTest {
+class ServiceUserMapperTest {
 
-    @Autowired
-    private ServiceUserMapper serviceUserMapper;
+    private final ServiceUserMapper serviceUserMapper = new ServiceUserMapperImpl();
 
     @Test
-    public void testMapFrom_whenParamIsValidCreateUserRequest_thenReturnValidServiceUser() {
+    void testMapFrom_whenParamIsValidCreateUserRequest_thenReturnValidServiceUser() {
         final Set<SecurityRole> expectedRoles = Set.of(SecurityRole.ROLE_USER, SecurityRole.ROLE_ADMIN);
         CreateUserRequest request = CreateUserRequest.builder()
                 .username("username33")

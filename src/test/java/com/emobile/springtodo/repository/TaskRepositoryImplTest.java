@@ -27,7 +27,7 @@ import java.util.Optional;
 @Slf4j
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-public class TaskRepositoryImplTest {
+class TaskRepositoryImplTest {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -40,17 +40,17 @@ public class TaskRepositoryImplTest {
         registry.add("spring.datasource.driver-class-name", POSTGRES::getDriverClassName);
     }
 
-    private final static PostgreSQLContainer<?> POSTGRES =
-            new PostgreSQLContainer<>("postgres");
+    private static final PostgreSQLContainer<?> POSTGRES =
+            new PostgreSQLContainer<>("postgres:17");
 
     @BeforeAll
-    public static void startDatabase() {
+    static void startDatabase() {
         POSTGRES.start();
     }
 
 
     @AfterAll
-    public static void stopDatabase() {
+    static void stopDatabase() {
         POSTGRES.stop();
     }
 
@@ -61,7 +61,7 @@ public class TaskRepositoryImplTest {
         @Test
         @Sql("test_data.sql")
         @DisplayName("Test findByBoardId with pageable when database not empty then return page of tasks")
-        public void testPageableFindByBoardId_whenDatabaseNotEmpty_thenReturnPageOfTasks() {
+        void testPageableFindByBoardId_whenDatabaseNotEmpty_thenReturnPageOfTasks() {
             TaskRepository taskRepository = new TaskRepositoryImpl(jdbcTemplate, new TaskRowMapper());
             final Long boardId = 1L;
             final int pageNum = 0;
@@ -77,7 +77,7 @@ public class TaskRepositoryImplTest {
 
         @Test
         @DisplayName("Test findByBoardId with pageable when database is empty then return empty page")
-        public void testPageableFindByBoardId_whenDatabaseIsEmpty_thenReturnEmptyPage() {
+        void testPageableFindByBoardId_whenDatabaseIsEmpty_thenReturnEmptyPage() {
             TaskRepository taskRepository = new TaskRepositoryImpl(jdbcTemplate, new TaskRowMapper());
             final int pageNum = 0;
             final Long boardId = 1L;
@@ -96,7 +96,7 @@ public class TaskRepositoryImplTest {
         @Test
         @Sql("test_data.sql")
         @DisplayName("Test findById when task is found then return optional of task")
-        public void testFindById_whenTaskIsFound_thenReturnOptionalOfTask() {
+        void testFindById_whenTaskIsFound_thenReturnOptionalOfTask() {
             final long taskId = 1L;
             TaskRepository taskRepository = new TaskRepositoryImpl(jdbcTemplate, new TaskRowMapper());
             Optional<Task> taskOpt = taskRepository.findById(taskId);
@@ -107,7 +107,7 @@ public class TaskRepositoryImplTest {
         @Test
         @Sql("test_data.sql")
         @DisplayName("Test findById when task not found then return empty optional")
-        public void testFindById_whenTaskIsNotFound_thenReturnEmptyOptional() {
+        void testFindById_whenTaskIsNotFound_thenReturnEmptyOptional() {
             TaskRepository taskRepository = new TaskRepositoryImpl(jdbcTemplate, new TaskRowMapper());
             Optional<Task> taskOpt = taskRepository.findById(999L);
             Assertions.assertTrue(taskOpt.isEmpty());
@@ -120,7 +120,7 @@ public class TaskRepositoryImplTest {
         @Test
         @Sql("test_data.sql")
         @DisplayName("Test save when add new task then return saved task entity")
-        public void testSave_whenAddNewTask_thenReturnSavedTask() {
+        void testSave_whenAddNewTask_thenReturnSavedTask() {
             Task task = Task.builder()
                     .title("tests")
                     .body("write tests for repository")
@@ -147,7 +147,7 @@ public class TaskRepositoryImplTest {
         @Test
         @Sql("test_data.sql")
         @DisplayName("Test save when update task data then return updated task")
-        public void testSave_whenUpdateTaskData_thenReturnUpdatedTask() {
+        void testSave_whenUpdateTaskData_thenReturnUpdatedTask() {
             TaskRepository taskRepository = new TaskRepositoryImpl(jdbcTemplate, new TaskRowMapper());
             Task task = taskRepository.findById(2L).orElseThrow();
             task.setTitle("Купить слона");
@@ -165,7 +165,7 @@ public class TaskRepositoryImplTest {
         @Test
         @Sql("test_data.sql")
         @DisplayName("Test deleteAll when call method then table is cleared")
-        public void testDeleteALl_whenCallMethod_thenTableCleared() {
+        void testDeleteALl_whenCallMethod_thenTableCleared() {
             final TaskRepository taskRepository = new TaskRepositoryImpl(jdbcTemplate, new TaskRowMapper());
             final long beforeCount = taskRepository.count();
             taskRepository.deleteAll();
@@ -177,7 +177,7 @@ public class TaskRepositoryImplTest {
         @Test
         @Sql("test_data.sql")
         @DisplayName("Test deleteById when call method then task is deleted")
-        public void testDeleteById_whenCallMethod_thenTaskIsDeleted() {
+        void testDeleteById_whenCallMethod_thenTaskIsDeleted() {
             final TaskRepository taskRepository = new TaskRepositoryImpl(jdbcTemplate, new TaskRowMapper());
             final long beforeCount = taskRepository.count();
             taskRepository.deleteById(2L);
@@ -189,7 +189,7 @@ public class TaskRepositoryImplTest {
     @Test
     @Sql("test_data.sql")
     @DisplayName("Test count when table not empty then return valid value")
-    public void testCount_whenTableNotEmpty_thenReturnValidValue() {
+    void testCount_whenTableNotEmpty_thenReturnValidValue() {
         final long expectedCount = 3;
         final TaskRepository taskRepository = new TaskRepositoryImpl(jdbcTemplate, new TaskRowMapper());
         final long count = taskRepository.count();
