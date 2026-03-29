@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage ('build') {
             steps {
-                sh 'mvn clean verify'
+                sh 'mvn clean verify Dmaven.test.skip=true'
             }
         }
         stage ('tests') {
