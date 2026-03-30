@@ -7,7 +7,7 @@ pipeline {
     }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-hub')
-        DOCKERHUB_REPOSITORY = 'alxsshv/SpringToDo'
+        DOCKERHUB_REPOSITORY = 'alxsshv/spring-to-do'
         IMAGE_VERSION_TAG = 'latest'
     }
     stages {
@@ -20,7 +20,7 @@ pipeline {
         stage ('Build jar') {
             when { changeRequest target: 'dev' }
             steps {
-                sh 'mvn -Dmaven.test.skip clean verify '
+                sh 'mvn -Dmaven.test.skip clean install'
             }
         }
         stage ('Run tests') {
