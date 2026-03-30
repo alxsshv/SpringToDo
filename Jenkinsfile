@@ -11,12 +11,6 @@ pipeline {
         IMAGE_VERSION_TAG = 'latest'
     }
     stages {
-        stage('Checkout') {
-            when { changeRequest target: 'dev' }
-            steps {
-                checkout scm
-            }
-        }
         stage ('Build jar') {
             when { changeRequest target: 'dev' }
             steps {

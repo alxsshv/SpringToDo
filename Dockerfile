@@ -1,11 +1,11 @@
-FROM gradle:9.2.1-jdk21-ubi AS builder
-WORKDIR /home/gradle/project
+FROM maven:3.9.14-eclipse-temurin-21 AS builder
+WORKDIR /home/maven/project
 COPY . .
-RUN gradle --no-daemon clean build -x test
+RUN mvn -Dmaven.test.skip clean install
 
 FROM eclipse-temurin:21-jre-ubi10-minimal AS layers
 WORKDIR /application
-COPY --from=builder /home/gradle/project/build/libs/*.jar app.jar
+COPY --from=builder /home/maven/project/target/*.jar app.jar
 RUN java -Djarmode=tools -jar app.jar extract --layers --destination extracted
 
 FROM eclipse-temurin:21-jre-ubi10-minimal AS runtime
