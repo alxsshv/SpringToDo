@@ -7,7 +7,7 @@ pipeline {
     }
     environment {
         DOCKERHUB_CREDENTIALS = credentials('docker-hub')
-        DOCKERHUB_REPOSITORY = 'alxsshv/SpringToDo'
+        DOCKERHUB_REPOSITORY = 'alxsshv/spring-to-do'
         IMAGE_VERSION_TAG = 'latest'
     }
     stages {
