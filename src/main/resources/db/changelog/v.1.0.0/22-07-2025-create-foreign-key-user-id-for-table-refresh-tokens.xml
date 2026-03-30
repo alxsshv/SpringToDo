@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd">
+
+    <changeSet id="24-07-2025-create-foreign-key-for-table-security-roles" author="shvariov.a">
+        <addForeignKeyConstraint baseTableName="refresh_tokens" baseColumnNames="user_id"
+                                 constraintName="refresh_tokens_user_id_service_users_id" referencedTableName="service_users"
+                                 referencedColumnNames="id" deleteCascade="true"/>
+    </changeSet>
+
+</databaseChangeLog>

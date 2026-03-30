@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd">
+
+    <changeSet id="22-07-2025-create-table-boards" author="shvariov.a">
+        <createTable tableName="boards" remarks="Доски">
+
+            <column name="id" type="bigint" autoIncrement="true" remarks="Идентификатор">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="user_id" type="bigint" remarks="идентификатор владельца">
+                <constraints nullable="false" foreignKeyName="boards_id_service_users_id"
+                             references="service_users(id)" deleteCascade="true"/>
+            </column>
+
+            <column name="title" type="varchar(255)" remarks="Название доски">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

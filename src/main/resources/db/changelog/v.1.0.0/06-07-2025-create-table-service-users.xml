@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd">
+
+    <changeSet id="06-07-2025-create-table-service-users" author="shvariov.a">
+        <createTable tableName="service_users" remarks="Пользователи">
+
+            <column name="id" type="bigint" autoIncrement="true" remarks="Идентификатор">
+                <constraints nullable="false" unique="true" primaryKey="true"/>
+            </column>
+
+            <column name="username" type="varchar(100)" remarks="Имя пользователя">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="email" type="varchar(100)" remarks="Адрес электронной почты">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="password" type="varchar(255)" remarks="Пароль">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

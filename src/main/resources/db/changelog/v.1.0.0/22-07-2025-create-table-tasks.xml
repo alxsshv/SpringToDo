@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.31.xsd">
+
+    <changeSet id="22-07-2025-create-table-tasks" author="shvariov.a">
+        <createTable tableName="tasks" remarks="Задачи">
+
+            <column name="id" type="bigint" autoIncrement="true" remarks="Идентификатор">
+                <constraints nullable="false" primaryKey="true"/>
+            </column>
+
+            <column name="title" type="varchar(100)" remarks="Наименование задачи">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="body" type="varchar" remarks="Содержание задачи"/>
+
+            <column name="task_priority" type="varchar(15)" remarks="Приоритет задачи">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="task_status" type="varchar(30)" remarks="Состояние задачи">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="complete_before" type="timestamp" remarks="Дата и время на которое запланировано выполнение задачи"/>
+
+            <column name="complete_date" type="timestamp" remarks="Дата и время выполнения задачи"/>
+
+            <column name="board_id" type="bigint" remarks="Идентификатор доски, на которой закреплена задача">
+                <constraints nullable="false" foreignKeyName="task_id_board_id"
+                             references="boards(id)" deleteCascade="true"/>
+            </column>
+
+            <column name="create_date" type="timestamp" remarks="Дата и время создания задачи">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="update_date" type="timestamp" remarks="Дата и время обновления доски">
+                <constraints nullable="false"/>
+            </column>
+
+        </createTable>
+    </changeSet>
+
+</databaseChangeLog>

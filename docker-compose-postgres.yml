@@ -1,0 +1,21 @@
+services:
+  database:
+    image: "postgres:17"
+    container_name: "database"
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "tododb"
+      POSTGRES_USER: "alexei"
+      POSTGRES_PASSWORD: "test"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -Ualexei -dtododb" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  redis:
+    image: "redis:8.0.3"
+    ports:
+      - "6379:6379"

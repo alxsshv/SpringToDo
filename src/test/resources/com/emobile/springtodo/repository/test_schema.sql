@@ -1,0 +1,31 @@
+CREATE TABLE service_users (
+id SERIAL PRIMARY KEY NOT NULL UNIQUE,
+username VARCHAR(100) NOT NULL UNIQUE,
+email VARCHAR(100) NOT NULL UNIQUE,
+password VARCHAR(255) NOT NULL);
+
+CREATE TABLE security_roles (
+id SERIAL PRIMARY KEY,
+user_id BIGINT NOT NULL,
+FOREIGN KEY (user_id) REFERENCES service_users(id) ON DELETE CASCADE,
+security_role VARCHAR(100) NOT NULL);
+
+CREATE TABLE boards (
+id SERIAL PRIMARY KEY,
+user_id BIGINT NOT NULL,
+FOREIGN KEY (user_id) REFERENCES service_users(id) ON DELETE CASCADE,
+title VARCHAR(100) NOT NULL);
+
+CREATE TABLE tasks (
+id SERIAL PRIMARY KEY,
+title VARCHAR(100) NOT NULL,
+body VARCHAR(100),
+task_priority VARCHAR(15) NOT NULL,
+task_status VARCHAR(30) NOT NULL,
+complete_before TIMESTAMP,
+complete_date TIMESTAMP,
+create_date TIMESTAMP NOT NULL,
+update_date TIMESTAMP NOT NULL,
+board_id BIGINT NOT NULL,
+FOREIGN KEY (board_id) REFERENCES boards(id) ON DELETE CASCADE);
+
